@@ -1,4 +1,4 @@
-peline {
+pipeline {
     agent {
         label 'jenkins-agent'
     }
@@ -37,7 +37,7 @@ peline {
                 }
             }
                 echo "Building application image"
-                withCredentials([usernameColonPassword(credentialsId: '<YOUR CREDENTIAL ID NAME>', variable: 'HARBOR-AUTH')]) {
+                withCredentials([usernameColonPassword(credentialsId: 'ushah-harbor-auth', variable: 'HARBOR-AUTH')]) {
                     script {
                         docker.build('$APP_IMAGE_NAME-$COMMIT_HASH', '-f ./app/Dockerfile ./afs-labs-student')
                         docker.withRegistry('https://$HARBOR_REGISTRY', 'ushah-harbor-auth') {
@@ -64,7 +64,7 @@ peline {
                 }
             }
                 echo "Building database image"
-                withCredentials([usernameColonPassword(credentialsId: '<YOUR CREDENTIAL ID NAME>', variable: 'HARBOR-AUTH')]) {
+                withCredentials([usernameColonPassword(credentialsId: 'ushah-harbor-auth', variable: 'HARBOR-AUTH')]) {
                     script {
                         docker.build('$DB_IMAGE_NAME-$COMMIT_HASH', '-f ./db/Dockerfile ./afs-labs-student')
                         docker.withRegistry('https://$HARBOR_REGISTRY', 'ushah-harbor-auth') {
