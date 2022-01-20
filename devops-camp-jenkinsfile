@@ -1,11 +1,11 @@
-pipeline {
+peline {
     agent {
         label 'jenkins-agent'
     }
     environment {
         PIPELINE_HASH = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
         HARBOR_REGISTRY = 'harbor.dev.afsmtddso.com'
-        HARBOR_PROJECT = 'ushah-harbor-auth'   
+        HARBOR_PROJECT = 'ushah-harbor-auth'
         APP_IMAGE_NAME = 'app'
         DB_IMAGE_NAME = 'db'
     }
@@ -23,19 +23,6 @@ pipeline {
         }
         stage('Application docker build') {
             steps {
-            post {
-                always {
-                    echo "Clean local $APP_IMAGE_NAME image"
-                    script {
-                        try {
-                            sh 'docker rmi $APP_IMAGE_NAME-$COMMIT_HASH:latest'
-                            sh 'docker rmi $HARBOR_REGISTRY/$HARBOR_PROJECT/$APP_IMAGE_NAME:$COMMIT_HASH-$PIPELINE_HASH'                            
-                        } catch (err) {
-                            echo err.getMessage()
-                        }
-                    }
-                }
-            }
                 echo "Building application image"
                 withCredentials([usernameColonPassword(credentialsId: 'ushah-harbor-auth', variable: 'HARBOR-AUTH')]) {
                     script {
@@ -47,22 +34,22 @@ pipeline {
                     }
                 }
             }
-        }
-        stage('Database docker build') {
-            steps {
             post {
                 always {
-                    echo "Clean local $DB_IMAGE_NAME image"
+                    echo "Clean local $APP_IMAGE_NAME image"
                     script {
                         try {
-                            sh 'docker rmi $DB_IMAGE_NAME-$COMMIT_HASH:latest'
-                            sh 'docker rmi $HARBOR_REGISTRY/$HARBOR_PROJECT/$DB_IMAGE_NAME:$COMMIT_HASH-$PIPELINE_HASH'                            
+                            sh 'docker rmi $APP_IMAGE_NAME-$COMMIT_HASH:latest'
+                            sh 'docker rmi $HARBOR_REGISTRY/$HARBOR_PROJECT/$APP_IMAGE_NAME:$COMMIT_HASH-$PIPELINE_HASH'
                         } catch (err) {
                             echo err.getMessage()
                         }
                     }
                 }
             }
+        }
+        stage('Database docker build') {
+            steps {
                 echo "Building database image"
                 withCredentials([usernameColonPassword(credentialsId: 'ushah-harbor-auth', variable: 'HARBOR-AUTH')]) {
                     script {
@@ -70,6 +57,19 @@ pipeline {
                         docker.withRegistry('https://$HARBOR_REGISTRY', 'ushah-harbor-auth') {
                             sh 'docker tag $DB_IMAGE_NAME-$COMMIT_HASH $HARBOR_REGISTRY/$HARBOR_PROJECT/$DB_IMAGE_NAME:$COMMIT_HASH-$PIPELINE_HASH'
                             sh 'docker push $HARBOR_REGISTRY/$HARBOR_PROJECT/$DB_IMAGE_NAME:$COMMIT_HASH-$PIPELINE_HASH'
+                        }
+                    }
+                }
+            }
+            post {
+                always {
+                    echo "Clean local $DB_IMAGE_NAME image"
+                    script {
+                        try {
+                            sh 'docker rmi $DB_IMAGE_NAME-$COMMIT_HASH:latest'
+                            sh 'docker rmi $HARBOR_REGISTRY/$HARBOR_PROJECT/$DB_IMAGE_NAME:$COMMIT_HASH-$PIPELINE_HASH'
+                        } catch (err) {
+                            echo err.getMessage()
                         }
                     }
                 }
@@ -92,4 +92,4 @@ pipeline {
             sh 'rm -rf .git ./*'
         }
     }
-} 
+}
