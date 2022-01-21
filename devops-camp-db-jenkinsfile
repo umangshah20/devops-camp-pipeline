@@ -15,13 +15,13 @@ pipeline {
                 echo "Cloning application repository"
                 sh 'git clone https://github.com/umangshah20/afs-labs-student.git'
                 dir('afs-labs-student') {
+                    script {
+                        env.COMMIT_HASH = sh(script: 'git log --format=format:%h -1 --follow database/database.sql', returnStdout: true).trim()
+                    }
+                }
                 withCredentials([usernamePassword(credentialsId: 'ushah-harbor-auth', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                     script {
                         env.BUILD_DB = sh(script: 'python check_harbor_db.py -h $COMMIT_HASH -i $DB_IMAGE_NAME -r $HARBOR_REGISTRY -p $HARBOR_PROJECT -c ${USERNAME}:${PASSWORD}', returnStdout: true).trim()
-                    }
-                }
-                    script {
-                        env.COMMIT_HASH = sh(script: 'git log --format=format:%h -1 --follow database/database.sql', returnStdout: true).trim()
                     }
                 }
             }
