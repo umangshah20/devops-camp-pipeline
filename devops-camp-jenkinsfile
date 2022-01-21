@@ -48,7 +48,8 @@ pipeline {
                 }
             }
         }
-        stage('Database docker build') {
+        /*
+	    stage('Database docker build') {
             steps {
                 echo "Building database image"
                 withCredentials([usernameColonPassword(credentialsId: 'ushah-harbor-auth', variable: 'HARBOR-AUTH')]) {
@@ -75,6 +76,7 @@ pipeline {
                 }
             }
         }
+       */ 
         stage('Test'){
             steps {
                 echo "Testing stage"
